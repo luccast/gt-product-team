@@ -108,17 +108,11 @@ This is the setup I use. One person, ten parallel agents, each with the right co
 
 **Requirements:** [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [Git](https://git-scm.com/), [Bun](https://bun.sh/) v1.0+. `/browse` compiles a native binary — works on macOS and Linux (x64 and arm64).
 
-### Step 1: Install on your machine
+```bash
+curl -fsSL https://raw.githubusercontent.com/luccast/ye-product-team/main/install | bash
+```
 
-Open Claude Code and paste this. Claude will do the rest.
-
-> Install gstack: run `git clone https://github.com/garrytan/gstack.git ~/.claude/skills/gstack && cd ~/.claude/skills/gstack && ./setup` then add a "gstack" section to CLAUDE.md that says to use the /browse skill from gstack for all web browsing, never use mcp\_\_claude-in-chrome\_\_\* tools, and lists the available skills: /plan-ceo-review, /plan-eng-review, /plan-design-review, /review, /ship, /browse, /qa, /qa-only, /setup-browser-cookies, /retro. Then ask the user if they also want to add gstack to the current project so teammates get it.
-
-### Step 2: Add to your repo so teammates get it (optional)
-
-> Add gstack to this project: run `cp -Rf ~/.claude/skills/gstack .claude/skills/gstack && rm -rf .claude/skills/gstack/.git && cd .claude/skills/gstack && ./setup` then add a "gstack" section to this project's CLAUDE.md that says to use the /browse skill from gstack for all web browsing, never use mcp\_\_claude-in-chrome\_\_\* tools, lists the available skills: /plan-ceo-review, /plan-eng-review, /plan-design-review, /review, /ship, /browse, /qa, /setup-browser-cookies, /retro, and tells Claude that if gstack skills aren't working, run `cd .claude/skills/gstack && ./setup` to build the binary and register skills.
-
-Real files get committed to your repo (not a submodule), so `git clone` just works. The binary and node\_modules are gitignored — teammates just need to run `cd .claude/skills/gstack && ./setup` once to build (or `/browse` handles it automatically on first use).
+This clones to `~/.claude/skills/gstack`, installs deps, builds the browser binary, and registers all skill symlinks.
 
 ### What gets installed
 

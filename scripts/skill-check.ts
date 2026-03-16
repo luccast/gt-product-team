@@ -26,6 +26,7 @@ const SKILL_FILES = [
   'retro/SKILL.md',
   'plan-ceo-review/SKILL.md',
   'plan-eng-review/SKILL.md',
+  'plan-design-review/SKILL.md',
   'setup-browser-cookies/SKILL.md',
 ].filter(f => fs.existsSync(path.join(ROOT, f)));
 

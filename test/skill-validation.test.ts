@@ -175,6 +175,7 @@ describe('Update check preamble', () => {
     'setup-browser-cookies/SKILL.md',
     'ship/SKILL.md', 'review/SKILL.md',
     'plan-ceo-review/SKILL.md', 'plan-eng-review/SKILL.md',
+    'plan-design-review/SKILL.md',
     'retro/SKILL.md',
   ];
 
@@ -404,10 +405,12 @@ describe('TODOS-format.md reference consistency', () => {
     const shipContent = fs.readFileSync(path.join(ROOT, 'ship', 'SKILL.md'), 'utf-8');
     const ceoPlanContent = fs.readFileSync(path.join(ROOT, 'plan-ceo-review', 'SKILL.md'), 'utf-8');
     const engPlanContent = fs.readFileSync(path.join(ROOT, 'plan-eng-review', 'SKILL.md'), 'utf-8');
+    const designPlanContent = fs.readFileSync(path.join(ROOT, 'plan-design-review', 'SKILL.md'), 'utf-8');
 
     expect(shipContent).toContain('TODOS-format.md');
     expect(ceoPlanContent).toContain('TODOS-format.md');
     expect(engPlanContent).toContain('TODOS-format.md');
+    expect(designPlanContent).toContain('TODOS-format.md');
   });
 });
 
@@ -420,6 +423,7 @@ describe('v0.4.1 preamble features', () => {
     'setup-browser-cookies/SKILL.md',
     'ship/SKILL.md', 'review/SKILL.md',
     'plan-ceo-review/SKILL.md', 'plan-eng-review/SKILL.md',
+    'plan-design-review/SKILL.md',
     'retro/SKILL.md',
   ];
 

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -e
+
+DEST=~/.claude/skills/gstack
+REPO=https://github.com/luccast/ye-product-team.git
+
+if [ -d "$DEST" ]; then
+  cd "$DEST"
+  git remote set-url origin "$REPO"
+  git fetch origin
+  git reset --hard origin/main
+else
+  git clone "$REPO" "$DEST"
+  cd "$DEST"
+fi
+
+./setup

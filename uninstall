@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+# gstack uninstall — remove Claude Code skill symlinks and the gstack install directory
+# Reverses what ./install and ./setup create under ~/.claude/skills/
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd -L)"
+
+if [ "$(basename "$SCRIPT_DIR")" = "gstack" ] && [ "$(basename "$(dirname "$SCRIPT_DIR")")" = "skills" ]; then
+  GSTACK="$SCRIPT_DIR"
+  SKILLS_ROOT="$(dirname "$GSTACK")"
+else
+  SKILLS_ROOT="${HOME}/.claude/skills"
+  GSTACK="${SKILLS_ROOT}/gstack"
+fi
+
+DRY_RUN=0
+YES=0
+PURGE_STATE=0
+
+usage() {
+  echo "Usage: $0 [options]"
+  echo "  Removes gstack skill symlinks under ~/.claude/skills/ and ~/.claude/skills/gstack"
+  echo ""
+  echo "Options:"
+  echo "  -y, --yes          Skip confirmation"
+  echo "  -n, --dry-run      Print actions only"
+  echo "      --purge-state  Also remove ~/.gstack (retro snapshots, eval history, etc.)"
+  echo "  -h, --help         This help"
+}
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -y | --yes) YES=1 ;;
+    -n | --dry-run) DRY_RUN=1 ;;
+    --purge-state) PURGE_STATE=1 ;;
+    -h | --help) usage; exit 0 ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+run() {
+  if [ "$DRY_RUN" -eq 1 ]; then
+    echo "[dry-run] $*"
+  else
+    "$@"
+  fi
+}
+
+# Symlinks created by setup: ~/.claude/skills/<name> -> gstack/<name>
+remove_skill_symlink() {
+  local name="$1"
+  local target="${SKILLS_ROOT}/${name}"
+  [ -e "$target" ] || return 0
+  if [ ! -L "$target" ]; then
+    echo "Skipping ${target} (not a symlink — leaving untouched)" >&2
+    return 0
+  fi
+  local link
+  link=$(readlink "$target")
+  if [ "$link" != "gstack/${name}" ]; then
+    echo "Skipping ${target} (points to ${link}, not gstack/${name})" >&2
+    return 0
+  fi
+  echo "Removing symlink ${target}"
+  run rm -f "$target"
+}
+
+echo "gstack uninstall"
+echo "  skills root: ${SKILLS_ROOT}"
+echo "  gstack dir:  ${GSTACK}"
+echo ""
+
+if [ -d "$SKILLS_ROOT" ]; then
+# 1) Remove symlinks for every skill directory that setup would link (same rules as setup)
+if [ -d "$GSTACK" ]; then
+  for skill_dir in "${GSTACK}"/*/; do
+    [ -d "$skill_dir" ] || continue
+    skill_name="$(basename "$skill_dir")"
+    [ "$skill_name" = "node_modules" ] && continue
+    [ -f "${skill_dir}SKILL.md" ] || continue
+    remove_skill_symlink "$skill_name"
+  done
+else
+  echo "Note: ${GSTACK} not found — only removing matching symlinks under ${SKILLS_ROOT}"
+fi
+
+# 2) Catch stray gstack/* symlinks if gstack was already deleted or skills changed
+shopt -s nullglob
+for entry in "${SKILLS_ROOT}"/*; do
+  [ -L "$entry" ] || continue
+  name="$(basename "$entry")"
+  [ "$name" = "gstack" ] && continue
+  link=$(readlink "$entry")
+  [ "$link" = "gstack/${name}" ] || continue
+  echo "Removing symlink ${entry}"
+  run rm -f "$entry"
+done
+shopt -u nullglob
+
+  # 3) Remove the gstack tree (clone or symlink)
+  if [ -L "$GSTACK" ]; then
+    echo "Removing gstack symlink ${GSTACK}"
+    run rm -f "$GSTACK"
+  elif [ -d "$GSTACK" ]; then
+    if [ "$YES" -eq 0 ] && [ "$DRY_RUN" -eq 0 ]; then
+      echo ""
+      echo "This will delete the entire directory:"
+      echo "  ${GSTACK}"
+      printf "Continue? [y/N] "
+      read -r reply
+      case "$reply" in
+        y | Y | yes | YES) ;;
+        *) echo "Aborted."; exit 1 ;;
+      esac
+    fi
+    echo "Removing directory ${GSTACK}"
+    run rm -rf "$GSTACK"
+  fi
+else
+  echo "Note: ${SKILLS_ROOT} does not exist — skipping symlink and gstack directory steps."
+fi
+
+# 4) Optional global state
+if [ "$PURGE_STATE" -eq 1 ]; then
+  if [ -d "${HOME}/.gstack" ]; then
+    echo "Removing ${HOME}/.gstack (--purge-state)"
+    run rm -rf "${HOME}/.gstack"
+  else
+    echo "No ${HOME}/.gstack to remove"
+  fi
+else
+  echo ""
+  echo "Left ${HOME}/.gstack in place (project retros, eval runs, etc.)."
+  echo "To remove that data too: $0 --purge-state -y"
+fi
+
+echo ""
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "Dry run complete — no changes made."
+else
+  echo "gstack uninstalled from Claude Code skills."
+fi

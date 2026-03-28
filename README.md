@@ -124,6 +124,16 @@ This clones to `~/.claude/skills/gstack`, installs deps, builds the browser bina
 
 Everything lives inside `.claude/`. Nothing touches your PATH or runs in the background.
 
+### Uninstall
+
+From the repo (or from `~/.claude/skills/gstack` after install):
+
+```bash
+./uninstall
+```
+
+Use `./uninstall -y` to skip the confirmation before deleting the clone. `./uninstall -n` shows what would be removed. `./uninstall --purge-state -y` also deletes `~/.gstack` (retros, eval history).
+
 ---
 
 ```
